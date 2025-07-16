@@ -65,6 +65,11 @@ class Cp2k(MakefilePackage, CMakePackage, CudaPackage, ROCmPackage):
 
     generator("ninja")
 
+    variant("build_type", default="Release", description="CMake build type",
+        values=("Debug", "Release", "RelWithDebInfo", "MinSizeRel", "Coverage"),
+        when="build_system=cmake"
+    )
+
     variant("mpi", default=True, description="Enable MPI support")
     variant("openmp", default=True, description="Enable OpenMP support")
     variant(
