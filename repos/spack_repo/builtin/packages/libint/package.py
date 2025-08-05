@@ -10,7 +10,7 @@ from spack.package import *
 
 TUNE_VARIANTS_CP2K = ("cp2k-lmax-4", "cp2k-lmax-5", "cp2k-lmax-6", "cp2k-lmax-7")
 TUNE_VARIANTS_MOLGW = ("molgw-lmax-4", "molgw-lmax-5", "molgw-lmax-6", "molgw-lmax-7")
-TUNE_VARIANTS = tuple("none") + TUNE_VARIANTS_CP2K + TUNE_VARIANTS_MOLGW
+TUNE_VARIANTS = tuple(["none"]) + TUNE_VARIANTS_CP2K + TUNE_VARIANTS_MOLGW
 
 
 class Libint(AutotoolsPackage):
@@ -73,6 +73,7 @@ class Libint(AutotoolsPackage):
     depends_on("boost", when="@2: +fortran")
     # Eigen is optional and not strictly necessary
     depends_on("eigen", when="@2.7.0: +eigen")
+    depends_on("gmp+cxx", when="@2:")
     # unicode variable names in @2.9.0:
     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67224
     conflicts("%gcc@:9", when="@2.9.0:", msg="libint@2.9.0: requires at least gcc 10")
