@@ -1,6 +1,7 @@
 # Copyright Spack Project Developers. See COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
+import copy
 import os
 import sys
 
@@ -10,6 +11,8 @@ from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.makefile import MakefilePackage
 from spack_repo.builtin.build_systems.rocm import ROCmPackage
 
+import spack.util.environment
+from spack.build_environment import dso_suffix
 from spack.package import *
 
 GPU_MAP = {
@@ -36,8 +39,8 @@ class Cp2k(MakefilePackage, CMakePackage, CudaPackage, ROCmPackage):
     build_system(conditional("cmake", when="@2023.2:"), "makefile", default="cmake")
 
     homepage = "https://www.cp2k.org"
-    url = "https://github.com/cp2k/cp2k/releases/download/v3.0.0/cp2k-3.0.tar.bz2"
-    git = "https://github.com/hfp/cp2k.git"
+    url = "https://github.com/cp2k/cp2k/releases/download/v2025.2/cp2k-2025.2.tar.bz2"
+    git = "https://github.com/cp2k/cp2k.git"
     list_url = "https://github.com/cp2k/cp2k/releases"
 
     maintainers("dev-zero", "mtaillefumier", "RMeli", "abussy", "hfp")
@@ -46,6 +49,7 @@ class Cp2k(MakefilePackage, CMakePackage, CudaPackage, ROCmPackage):
 
     license("GPL-2.0-or-later")
 
+    version("2025.2", sha256="c8392a4e123304644ec8d241443796277c6ed7ae977452317e779f3c387c2e19")
     version("2025.1", sha256="65c8ad5488897b0f995919b9fa77f2aba4b61677ba1e3c19bb093d5c08a8ce1d")
     version("2024.3", sha256="a6eeee773b6b1fb417def576e4049a89a08a0ed5feffcd7f0b33c7d7b48f19ba")
     version("2024.2", sha256="cc3e56c971dee9e89b705a1103765aba57bf41ad39a11c89d3de04c8b8cdf473")
@@ -61,14 +65,6 @@ class Cp2k(MakefilePackage, CMakePackage, CudaPackage, ROCmPackage):
     version("master", branch="master", submodules="True")
 
     generator("ninja")
-
-    variant(
-        "build_type",
-        default="Release",
-        description="CMake build type",
-        values=("Debug", "Release", "RelWithDebInfo", "MinSizeRel", "Coverage"),
-        when="build_system=cmake",
-    )
 
     variant("mpi", default=True, description="Enable MPI support")
     variant("openmp", default=True, description="Enable OpenMP support")
@@ -304,7 +300,7 @@ class Cp2k(MakefilePackage, CMakePackage, CudaPackage, ROCmPackage):
         depends_on("mpi@3:", when="@2023.1:")
         depends_on("scalapack")
         depends_on("mpich+fortran", when="^[virtuals=mpi] mpich")
-        depends_on("intel-oneapi-mkl +cluster", when="^[virtuals=blas] intel-oneapi-mkl")
+        depends_on("intel-oneapi-mkl +cluster", when="^[virtuals=scalapack] intel-oneapi-mkl")
         conflicts("~mpi_f08", when="^mpich@4.1:")
 
     with when("+cosma"):
@@ -568,7 +564,6 @@ class MakefileBuilder(makefile.MakefileBuilder):
         nvflags = ["-O3"]
         ldflags = []
         libs = []
-        dso_suffix = shared_library_suffix(spec)
 
         # CP2K Makefile doesn't set C standard
         if spec.satisfies("@2023.2:"):
@@ -665,8 +660,10 @@ class MakefileBuilder(makefile.MakefileBuilder):
             libs += [
                 join_path(spec["pexsi"].libs.directories[0], "libpexsi.a"),
                 join_path(spec["superlu-dist"].libs.directories[0], "libsuperlu_dist.a"),
-                join_path(spec["parmetis"].libs.directories[0], f"libparmetis.{dso_suffix}"),
-                join_path(spec["metis"].libs.directories[0], f"libmetis.{dso_suffix}"),
+                join_path(
+                    spec["parmetis"].libs.directories[0], "libparmetis.{0}".format(dso_suffix)
+                ),
+                join_path(spec["metis"].libs.directories[0], "libmetis.{0}".format(dso_suffix)),
             ]
 
         if spec.satisfies("+elpa"):
@@ -710,7 +707,7 @@ class MakefileBuilder(makefile.MakefileBuilder):
         if spec.satisfies("+plumed"):
             dflags.extend(["-D__PLUMED2"])
             cppflags.extend(["-D__PLUMED2"])
-            libs += [join_path(spec["plumed"].prefix.lib, f"libplumed.{dso_suffix}")]
+            libs += [join_path(spec["plumed"].prefix.lib, "libplumed.{0}".format(dso_suffix))]
 
         if spec.satisfies("+libvori"):
             cppflags += ["-D__LIBVORI"]
@@ -907,12 +904,15 @@ class MakefileBuilder(makefile.MakefileBuilder):
         with open(self.makefile, "w") as mkf:
             if spec.satisfies("+plumed"):
                 mkf.write(
-                    "# include Plumed.inc as recommended by PLUMED to include libraries and flags"
+                    "# include Plumed.inc as recommended by"
+                    "PLUMED to include libraries and flags"
                 )
                 mkf.write("include {0}\n".format(self.pkg["plumed"].plumed_inc))
 
             mkf.write("\n# COMPILER, LINKER, TOOLS\n\n")
-            mkf.write("FC  = {0}\nCC  = {1}\nCXX = {2}\nLD  = {3}\n".format(fc, cc, cxx, fc))
+            mkf.write(
+                "FC  = {0}\n" "CC  = {1}\n" "CXX = {2}\n" "LD  = {3}\n".format(fc, cc, cxx, fc)
+            )
 
             if spec.satisfies("%intel"):
                 intel_bin_dir = ancestor(pkg.compiler.cc)
@@ -972,7 +972,7 @@ class MakefileBuilder(makefile.MakefileBuilder):
 
         # Apparently the Makefile bases its paths on PWD
         # so we need to set PWD = self.build_directory
-        with set_env(PWD=self.build_directory):
+        with spack.util.environment.set_env(PWD=self.build_directory):
             super().build(pkg, spec, prefix)
 
             with working_dir(self.build_directory):
@@ -1031,7 +1031,7 @@ class MakefileBuilder(makefile.MakefileBuilder):
 
         # CP2K < 7 still uses $PWD to detect the current working dir
         # and Makefile is in a subdir, account for both facts here:
-        with set_env(CP2K_DATA_DIR=data_dir, PWD=self.build_directory):
+        with spack.util.environment.set_env(CP2K_DATA_DIR=data_dir, PWD=self.build_directory):
             with working_dir(self.build_directory):
                 make("test", *self.build_targets)
 
