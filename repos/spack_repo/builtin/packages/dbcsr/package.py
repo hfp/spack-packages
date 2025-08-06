@@ -15,7 +15,7 @@ class Dbcsr(CMakePackage, CudaPackage, ROCmPackage):
     """Distributed Block Compressed Sparse Row matrix library."""
 
     homepage = "https://github.com/cp2k/dbcsr"
-    git = "https://github.com/hfp/dbcsr.git"
+    git = "https://github.com/cp2k/dbcsr.git"
     url = "https://github.com/cp2k/dbcsr/releases/download/v2.2.0/dbcsr-2.2.0.tar.gz"
     list_url = "https://github.com/cp2k/dbcsr/releases"
 
@@ -34,14 +34,6 @@ class Dbcsr(CMakePackage, CudaPackage, ROCmPackage):
     version("2.2.0", sha256="245b0382ddc7b80f85af8288f75bd03d56ec51cdfb6968acb4931529b35173ec")
     version("2.1.0", sha256="9e58fd998f224632f356e479d18b5032570d00d87b86736b6a6ac2d03f8d4b3c")
     version("2.0.1", sha256="61d5531b661e1dab043353a1d67939ddcde3893d3dc7b0ab3d05074d448b485c")
-
-    variant(
-        "build_type",
-        default="Release",
-        description="CMake build type",
-        values=("Debug", "Release", "RelWithDebInfo", "MinSizeRel", "Coverage"),
-        when="build_system=cmake",
-    )
 
     variant("tests", default=False, description="Build DBCSR unit tests")
     variant("tests", default=True, description="Build DBCSR unit tests", when="@2.1:2.2")
@@ -129,7 +121,7 @@ class Dbcsr(CMakePackage, CudaPackage, ROCmPackage):
     conflicts("+cuda", when="+opencl", msg=accel_msg)
     conflicts("+rocm", when="+opencl", msg=accel_msg)
 
-    # Require openmp threading for OpenBLAS by making other options conflict
+    # Require OpenMP threading by making other options conflict
     conflicts("^intel-oneapi-mkl threads=none", when="+openmp")
     conflicts("^intel-oneapi-mkl threads=tbb", when="+openmp")
     conflicts("^openblas threads=pthreads", when="+openmp")
