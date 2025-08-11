@@ -72,6 +72,7 @@ class Dbcsr(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("mpi", when="+mpi")
 
     with when("smm=libxsmm"):
+        depends_on("libxsmm+shared", when="+shared")
         depends_on("libxsmm@1.11:")
 
     depends_on("cmake@3.10:", type="build")
