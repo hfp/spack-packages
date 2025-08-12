@@ -15,7 +15,7 @@ class Dbcsr(CMakePackage, CudaPackage, ROCmPackage):
     """Distributed Block Compressed Sparse Row matrix library."""
 
     homepage = "https://github.com/cp2k/dbcsr"
-    git = "https://github.com/cp2k/dbcsr.git"
+    git = "https://github.com/hfp/dbcsr.git"
     url = "https://github.com/cp2k/dbcsr/releases/download/v2.2.0/dbcsr-2.2.0.tar.gz"
     list_url = "https://github.com/cp2k/dbcsr/releases"
 
