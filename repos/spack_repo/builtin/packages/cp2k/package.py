@@ -38,7 +38,7 @@ class Cp2k(MakefilePackage, CMakePackage, CudaPackage, ROCmPackage):
 
     homepage = "https://www.cp2k.org"
     url = "https://github.com/cp2k/cp2k/releases/download/v2025.2/cp2k-2025.2.tar.bz2"
-    git = "https://github.com/hfp/cp2k.git"
+    git = "https://github.com/cp2k/cp2k.git"
     list_url = "https://github.com/cp2k/cp2k/releases"
 
     maintainers("dev-zero", "mtaillefumier", "RMeli", "abussy", "hfp")
