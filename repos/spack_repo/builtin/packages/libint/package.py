@@ -57,8 +57,8 @@ class Libint(AutotoolsPackage):
 
     # Build dependencies
     depends_on("fortran", type="build", when="+fortran")
-    depends_on("cxx", type="build")  # generated
-    depends_on("c", type="build")  # generated
+    depends_on("cxx", type="build")
+    depends_on("c", type="build")
 
     depends_on("autoconf@2.52:", type="build")
     depends_on("automake", type="build")
@@ -72,7 +72,7 @@ class Libint(AutotoolsPackage):
     # is sufficient (Boost.with_default_variants not needed)
     depends_on("boost", when="@2: +fortran")
     # Eigen is optional and not strictly necessary
-    depends_on("eigen", when="@2.7.0: +eigen")
+    depends_on("eigen", when="@2.7.0: +cxx")
     depends_on("gmp+cxx", when="@2:")
     # unicode variable names in @2.9.0:
     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67224
