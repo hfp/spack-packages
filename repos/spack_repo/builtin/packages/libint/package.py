@@ -48,7 +48,6 @@ class Libint(AutotoolsPackage):
     )
     variant("fma", default=True, description="Generate code utilizing FMA")
     variant("cxx", default=False, description="Build and install the C++ API")
-    variant("eigen", default=False, description="Eigen used by implementation", when="+cxx")
 
     description_fortran = "Build and install Fortran bindings"
     variant("fortran", default=False, description=description_fortran)
