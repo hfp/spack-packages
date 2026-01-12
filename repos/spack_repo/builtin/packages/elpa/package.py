@@ -23,10 +23,15 @@ class Elpa(AutotoolsPackage, CudaPackage, ROCmPackage):
     url = "https://elpa.mpcdf.mpg.de/software/tarball-archive/Releases/2015.11.001/elpa-2015.11.001.tar.gz"
     git = "https://gitlab.mpcdf.mpg.de/elpa/elpa.git"
 
+    maintainers("hfp")
+
     license("LGPL-3.0-only")
 
     version("master", branch="master")
 
+    version(
+        "2025.06.002", sha256="de3180c06e2b0dbb56939e84ad1a5fd1684465bd38ad2196792d0f4028937fda"
+    )
     version(
         "2025.06.001", sha256="feeb1fea1ab4a8670b8d3240765ef0ada828062ef7ec9b735eecba2848515c94"
     )
@@ -92,6 +97,7 @@ class Elpa(AutotoolsPackage, CudaPackage, ROCmPackage):
     depends_on("fortran", type="build")  # generated
 
     depends_on("autoconf@2.71:", type="build", when="@master")
+    depends_on("autoupdate", type="build", when="@master")
     depends_on("automake", type="build", when="@master")
 
     depends_on("blas")
