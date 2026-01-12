@@ -58,7 +58,7 @@ class NvplScalapack(Package):
         ):
             mpi_type = "mpich"
         elif spec.satisfies("^[virtuals=mpi] openmpi"):
-            mpi_type = "openmpi" + spec["openmpi"].version.up_to(1)
+            mpi_type = "openmpi" + str(spec["openmpi"].version.up_to(1))
         else:
             raise InstallError(
                 f"Unsupported MPI library {spec['mpi']}.\n"
